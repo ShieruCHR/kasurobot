@@ -19,7 +19,7 @@ async def on_ready():
     await bot.tree.sync()
 
 
-@bot.hybrid_command()
+@bot.hybrid_command(description="どうせすぐ廃れるのに…")
 async def generate(ctx, *, message: str):
     image = Image.open("image.png")
     draw = ImageDraw.Draw(image)
