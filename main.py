@@ -8,10 +8,11 @@ from PIL import Image, ImageDraw, ImageFont
 load_dotenv()
 
 intents = discord.Intents.default()
-bot = commands.Bot(intents=intents, command_prefix=lambda _, __: False)
+bot = commands.Bot(intents=intents, command_prefix="")
 
 # 画像のテキスト描画位置（中心）
-x1, y1 = 577, 353
+robot = (577, 353)
+dragon = (260, 203)
 
 
 @bot.event
@@ -19,16 +20,48 @@ async def on_ready():
     await bot.tree.sync()
 
 
-@bot.hybrid_command(description="どうせすぐ廃れるのに…")
-async def generate(ctx, *, message: str):
-    image = Image.open("image.png")
+def generate_image(
+    original: str,
+    message: str,
+    center: tuple[int, int],
+    fontsize: int = 80,
+    chunk: int = 10,
+):
+    image = Image.open(original)
     draw = ImageDraw.Draw(image)
-    font = ImageFont.truetype("font.ttf", 80)
+    font = ImageFont.truetype("font.ttf", fontsize)
 
-    chunks = [message[i : i + 10] for i in range(0, len(message), 10)]
+    chunks = [message[i : i + chunk] for i in range(0, len(message), chunk)]
     text = "\n".join(chunks)
 
-    draw.text((x1, y1), text, font=font, align="center", anchor="mm", fill=(0, 0, 0))
+    draw.text(center, text, font=font, align="center", anchor="mm", fill=(0, 0, 0))
+    return image
+
+
+@bot.hybrid_command(name="robot", description="どうせすぐ廃れるのに…")
+async def _robot(ctx, *, message: str):
+    image = generate_image(
+        "image.png",
+        message,
+        robot,
+    )
+
+    image_bytes = io.BytesIO()
+    image.save(image_bytes, format="PNG")
+    image_bytes.seek(0)
+
+    file = discord.File(image_bytes, filename="image.png")
+    await ctx.send(file=file)
+
+
+@bot.hybrid_command(name="dragon", description="好きなBot発表ドラゴン")
+async def _dragon(ctx, *, message: str):
+    image = generate_image(
+        "dragon.png",
+        message,
+        dragon,
+        60,
+    )
 
     image_bytes = io.BytesIO()
     image.save(image_bytes, format="PNG")
